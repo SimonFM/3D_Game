@@ -241,6 +241,8 @@ vec3 getPosition(mat4 mat) {
 }
 
 
+
+
 float get_squared_dist(vec3 from, vec3 to) {
 	float x = (to.v[0] - from.v[0]) * (to.v[0] - from.v[0]);
 	float y = (to.v[1] - from.v[1]) * (to.v[1] - from.v[1]);

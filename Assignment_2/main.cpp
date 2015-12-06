@@ -1,121 +1,33 @@
 
 //Some Windows Headers (For Time, IO, etc.)
-#include <windows.h>
-#include <mmsystem.h>
-#include <GL/glew.h>
-#include <GL/freeglut.h>
-#include <iostream>
-#include "maths_funcs.h"
-#include "text.h"
-#include <conio.h>
-#include <GLFW/glfw3.h>
-
-
-// Assimp includes
-#include <assimp/cimport.h> // C importer
-#include <assimp/scene.h> // collects data
-#include <assimp/postprocess.h> // various extra operations
-#include <stdio.h>
-#include <math.h>
-#include <vector> // STL dynamic memory.
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-
+#include "Includes.h"
 #pragma warning(disable:4996)
-
-
-/*----------------------------------------------------------------------------
-MESH TO LOAD
-----------------------------------------------------------------------------*/
-// this mesh is a dae file format but you should be able to use any other format too, obj is typically what is used
-// put the mesh in your project directory, or provide a filepath for it here
-#define PLANE_MESH_OBJ "../Textures/plane.obj"
-#define PYRAMID_MESH_OBJ "../Textures/pyramid.obj"
-#define CIRCLE_MESH_OBJ "../Textures/circle.obj"
-#define PALM_MESH_OBJ "../Textures/palm.obj"
-#define WALLS_MESH_OBJ "../Textures/wallls.obj"
-#define BALL_MESH_OBJ "../Textures/ball.obj"
-
-#define SAND_PATH "../Textures/sand.jpg"
-#define PALM_PATH "../Textures/palm.jpg"
-#define BRICK_PATH "../Textures/sand_brick.jpg"
-/*----------------------------------------------------------------------------
-----------------------------------------------------------------------------*/
-
-std::vector<float> g_vp, g_vn, g_vt;
-int g_point_count = 0;
-float x_val = -10.0, y_val = 5.0, z_val = 5.0;
-float pos_x = 0.0f, pos_y = 5.0f, pos_z = 0.0f;
-vec3 CAM = vec3(x_val, y_val, z_val);
-vec3 POS = vec3(pos_x, pos_y, pos_z);
-mat4 view = look_at(CAM,POS,vec3(0.0,1.0,0.0));
-vec3  move = vec3(0.005f, 0.0f, 0.0f);
-vec3  move2 = vec3(0.005f, 0.0f, 0.0f);
-
-
-float pyramidX = 0.05f;
-vec3 pyramind3Movement  = vec3(0.0, pyramidX, 0.0);
-
-bool anyKeyPressed = true;
-#define ESC_BUTTON 27
-#define NUM_OF_MODELS 10
-
-float fov = 45.0f;
-unsigned int vao = 0;
-unsigned int vn_vbo = 0;
-unsigned int vp_vbo = 0;
-unsigned int vt_vbo = 0;
-
-// Texture stuff
-// Handles to our textures
-GLuint textures[5];
-
-// Macro for indexing vertex buffer
-#define BUFFER_OFFSET(i) ((char *)NULL + (i))
-
-GLuint shaderProgramID;
-
-unsigned int mesh_vao = 0;
-int width = 500;
-int height = 500;
-
-GLuint loc1, loc2, loc3;
-GLuint uv;
-GLfloat rotate_y = 0.1f;
-
-// multiple VAO 
-int vaoArray[6];
-std::vector<mat4> models;
-mat4 playerModel = identity_mat4();
-mat4 wallsMat = identity_mat4();
-
-int pyramid = 0, plane = 0;
-int palm = 0, walls = 0;
 
 #pragma region GAME MECHANICS
 void initialiseModels() {
-	for (int i = 0; i < NUM_OF_MODELS; i++)	models.push_back(identity_mat4());
+	//for (int i = 0; i < numOfModels; i++)	models.push_back(identity_mat4());
 	//ground
-	models[0] = scale(models[0], vec3(2.0,2.0,2.0));
-	// middle
-	models[1] = translate(models[1], vec3(0.0f, 0.0f, 0.0f));
-	// left
-	models[2] = translate(models[2], vec3(-5.0f, 0.0f, -5.0f));
-	// right
-	models[3] = translate(models[3], vec3(-5.0f, 0.0f, 5.0f));
-	// other
-	playerModel = translate(playerModel, vec3(-5.0f, 0.0f, 5.0f));
+	ground = scale(ground, vec3(2.0,2.0,2.0));
+	
+	//ball = translate(ball, vec3(0.0f, 0.0f, 0.0f));// middle
+	ball1 = translate(ball1, vec3(-5.0f, 0.0f, -5.0f));	// left
+	ball2 = translate(ball2, vec3(5.0f, 0.0f, -5.0f));	// left
+	playerModel = translate(playerModel, vec3(-5.0f, 0.0f, 5.0f));	// player
+
 }
 
 void handleMovement() {
-	vec3 pos2 = getPosition(models[2]);
-	vec3 pos3 = getPosition(models[3]);
+	vec3 pos2 = getPosition(ball1);
+	vec3 pos3 = getPosition(ball2);
 	if (pos3.v[0] > 10.0) move = vec3(-.005f, 0.0f, 0.0f);
 	else if (pos3.v[0] < -10.0) move = vec3(0.005f, 0.0f, 0.0f);
 
 	if (pos2.v[0] > 10.0) move2 = vec3(-.001f, 0.0f, 0.0f);
 	else if (pos2.v[0] < -10.0) move2 = vec3(0.001f, 0.0f, 0.0f);
 }
+
+
+
 #pragma endregion GAME MECHANICS
 
 #pragma region TEXTURE LOADING
@@ -368,58 +280,48 @@ void display() {
 		// update uniforms & draw
 		glUniformMatrix4fv(proj_mat_location, 1, GL_FALSE, persp_proj.m);
 		glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, view.m);
-		glUniformMatrix4fv(matrix_location, 1, GL_FALSE, models[0].m);
+		glUniformMatrix4fv(matrix_location, 1, GL_FALSE, ground.m);
 		//glUniformMatrix4fv(camera_Pos, 1, GL_FALSE, view.m);
-		//add_text("Text", -1, 1, 20.0f, 1, 1, 1, 1);
-
+		
 		// ground
-		glBindVertexArray(1);
+		glBindVertexArray(GROUND);
 		glBindTexture(GL_TEXTURE_2D, textures[0]);
 		glDrawArrays(GL_TRIANGLES, 0, plane);
 
+		if (!ball1IsCaught) {
+			// pyramid (Left)
+			glBindVertexArray(PLAYER);
+			glBindTexture(GL_TEXTURE_2D, textures[1]);
+
+			glUniformMatrix4fv(matrix_location, 1, GL_FALSE, ball1.m);
+			glDrawArrays(GL_TRIANGLES, 0, palm);
+		}
 		
-		// pyramid Mid
-		glBindVertexArray(2);
-		glBindTexture(GL_TEXTURE_2D, textures[1]);
-		models[1] = rotate_y_deg(models[1], rotate_y);
-		glUniformMatrix4fv(matrix_location, 1, GL_FALSE, models[1].m);
-		glDrawArrays(GL_TRIANGLES, 0, pyramid);
-
-		// pyramid Left
-		glBindVertexArray(2);
-		models[2] = translate(models[2], move2);
-
-		glBindTexture(GL_TEXTURE_2D, textures[1]);
-
-		glUniformMatrix4fv(matrix_location, 1, GL_FALSE, models[2].m);
-		glDrawArrays(GL_TRIANGLES, 0, pyramid);
-
-		// pyramid Right
-		glBindVertexArray(2);
-
-		glBindTexture(GL_TEXTURE_2D, textures[1]);
-		models[3] = translate(models[3], move);
-		//models[3] = rotate_y_deg(models[3], pyramidX);
-					
-		glUniformMatrix4fv(matrix_location, 1, GL_FALSE, models[3].m);
-		glDrawArrays(GL_TRIANGLES, 0, pyramid);
+		if (!ball2IsCaught) {
+			// ball2( Right)
+			glBindVertexArray(PLAYER);
+			glBindTexture(GL_TEXTURE_2D, textures[1]);
+			glUniformMatrix4fv(matrix_location, 1, GL_FALSE, ball2.m);
+			glDrawArrays(GL_TRIANGLES, 0, palm);
+		}
+		
 
 		// Other
-		glBindVertexArray(3);
+		glBindVertexArray(PLAYER);
 		glBindTexture(GL_TEXTURE_2D, textures[2]);
-		glUniformMatrix4fv(matrix_location, 1, GL_FALSE, models[4].m);
+		glUniformMatrix4fv(matrix_location, 1, GL_FALSE, playerModel.m);
 		glDrawArrays(GL_TRIANGLES, 0, palm);
 
 		// walls
-		glBindVertexArray(4);
+		glBindVertexArray(WALLS);
 		glBindTexture(GL_TEXTURE_2D, textures[1]);
+		glUniformMatrix4fv(matrix_location, 1, GL_FALSE, wallsMat.m);
 		glDrawArrays(GL_TRIANGLES, 0, walls);
-
 		
 	}
 	// Draw the main Screen
 	else {
-		int hello_id = add_text("Press Any Key!", -1, 1, 20.0f,1, 1, 1, 1);
+		add_text("Press Any Key!", -1, 1, 20.0f,1, 1, 1, 1);
 		draw_texts();
 	}
 	glutSwapBuffers();
@@ -428,14 +330,8 @@ void display() {
 
 void updateScene() {
 
-	// Placeholder code, if you want to work with framerate
-	// Wait until at least 16ms passed since start of last frame (Effectively caps framerate at ~60fps)
-	static DWORD  last_time = 0;
-	DWORD  curr_time = timeGetTime();
-	float  delta = (curr_time - last_time) * 0.001f;
-	if (delta > 0.03f) delta = 0.03f;
-	last_time = curr_time;
 	handleMovement();
+	if (numOfModels == 1) exit(1);
 	// Draw the next frame
 	glutPostRedisplay();
 }
@@ -448,23 +344,19 @@ void init(){
 	// load in the textures
 	textures[0] = textureLoading(SAND_PATH);
 	textures[1] = textureLoading(BRICK_PATH);
-	textures[2] = textureLoading(PALM_PATH); 
+	textures[2] = textureLoading(POKEBALL_PATH);
 	textures[4] = textureLoading(WALLS_MESH_OBJ);
 
-	GLuint * vertexArrays = (GLuint *)malloc(sizeof(GLuint) * 10);
-	glGenVertexArrays(5, vertexArrays);
+	GLuint * vertexArrays = (GLuint *)malloc(sizeof(GLuint) * VAO_SIZE);
+	glGenVertexArrays(VAO_SIZE, vertexArrays);
 	// Draw the sand plane with that texture
-	generateObjectBufferMesh(PLANE_MESH_OBJ,1);
+	generateObjectBufferMesh(PLANE_MESH_OBJ,GROUND);
 	plane = g_point_count;
-	// Generate the pyramids in the object
-	generateObjectBufferMesh(PYRAMID_MESH_OBJ,2);
-	pyramid = g_point_count;
 	// draw palm trees
-	generateObjectBufferMesh(BALL_MESH_OBJ, 3);
+	generateObjectBufferMesh(BALL_MESH_OBJ, PLAYER);
 	palm = g_point_count;
-	generateObjectBufferMesh(WALLS_MESH_OBJ,4);
+	generateObjectBufferMesh(WALLS_MESH_OBJ, WALLS);
 	walls = g_point_count;
-
 }
 
 #pragma region HANDLE_INPUT
@@ -473,20 +365,22 @@ void init(){
 void keypress(unsigned char key, int x, int y) {
 	if (anyKeyPressed) {
 		switch (key) {
-		//	case 'w': view = translate(view, vec3(0.0f, 0.0f, 1.0f)); break;
-	//		case 's': view = translate(view, vec3(0.0f, 0.0f, -1.0f)); break;
-	//		case 'a': view = translate(view, vec3(1.0f, 0.0f, 0.0f)); break;
-	//		case 'd': view = translate(view, vec3(-1.0f, 0.0f, 0.0f)); break;
-	//		case 'q': view = rotate_z_deg(view, -1); break;
-	//		case 'e': view = rotate_z_deg(view, 1); break;
+			case 'w': view = translate(view, vec3(0.0f, 0.0f, 1.0f)); break;
+			case 's': view = translate(view, vec3(0.0f, 0.0f, -1.0f)); break;
+			case 'a': view = translate(view, vec3(1.0f, 0.0f, 0.0f)); break;
+			case 'd': view = translate(view, vec3(-1.0f, 0.0f, 0.0f)); break;
+			case 'q': view = rotate_z_deg(view, -1); break;
+			case 'e': view = rotate_z_deg(view, 1); break;
 			case ESC_BUTTON: exit(0);
 		}
+		print(view);
 	}
-	else 
+	else {
 		switch (key) {
 			case ESC_BUTTON: exit(0);
 			default: anyKeyPressed = true;
 		}
+	}
 	
 }
 // handles mouse scrolling this stackoverflow helped:
@@ -508,24 +402,190 @@ void mouseMove(int x, int y) {
 	if (y < 50 && y > 0)  view = rotate_x_deg(view, -1);
 }
 
+
+// keeps a record of each model's position in the system.
+void updatePositions(mat4 newPlayerPos, mat4 newBall1, mat4 newBall2) {
+	modelsPos[0] = getPosition(newPlayerPos);
+	for (int i = 1; i < numOfModels; i++) {
+		switch (i) {
+		case 1:
+			modelsPos[i] = getPosition(newBall1);
+			break;
+		case 2:
+			modelsPos[i] = getPosition(newBall2);
+			break;
+		}
+	}
+	
+}
+
+// Returns the distance between two points in the 3D co ordinate system.
+double distanceBetweenPoints(vec3 p1, vec3 p2) {
+	double t1 = p1.v[0] - p2.v[0];
+	double t2 = p1.v[1] - p2.v[1];
+	double t3 = p1.v[2] - p2.v[2];
+	return sqrt((t1*t1) + (t2*t2) + (t3*t3));
+}
+
+void moveLeft(int result, mat4 newPlayerModel, mat4 newball1, mat4 newball2) {
+	if (result < 0) {
+		std::cout << "You caught: " << result * -1 << std::endl;
+		if (result * -1 == 1) {
+			ball1IsCaught = true;
+			modelsPos.erase(modelsPos.begin() + 1);
+		}
+		else {
+			ball2IsCaught = true;
+			modelsPos.erase(modelsPos.begin() + 2);
+		}
+		numOfModels--;
+	}
+	else if (result == 0) {
+		playerModel = newPlayerModel;
+		if (!ball1IsCaught)
+			ball1 = translate(ball1, vec3(1.0f, 0.0f, 0.0f));
+		if (!ball2IsCaught)
+			ball2 = translate(ball2, vec3(1.0f, 0.0f, 0.0f));
+		updatePositions(playerModel, ball1, ball2);
+	}
+}
+
+void moveRight(int result, mat4 newPlayerModel, mat4 newball1, mat4 newball2) {
+	if (result < 0) {
+		std::cout << "You caught: " << result * -1 << std::endl;
+		if (result * -1 == 1) {
+			ball1IsCaught = true;
+			modelsPos.erase(modelsPos.begin() + 1);
+		}
+		else {
+			ball2IsCaught = true;
+			modelsPos.erase(modelsPos.begin() + 2);
+		}
+		numOfModels--;
+	}
+	else if (result == 0) {
+		playerModel = newPlayerModel;
+		if (!ball1IsCaught)
+			ball1 = translate(ball1, vec3(-1.0f, 0.0f, 0.0f));
+		if (!ball2IsCaught)
+			ball2 = translate(ball2, vec3(-1.0f, 0.0f, 0.0f));
+		updatePositions(playerModel, ball1, ball2);
+	}
+}
+
+void moveUp(int result, mat4 newPlayerModel, mat4 newball1, mat4 newball2) {
+	if (result < 0) {
+		std::cout << "You caught: " << result * -1 << std::endl;
+		if (result * -1 == 1) {
+			ball1IsCaught = true;
+			modelsPos.erase(modelsPos.begin() + 1);
+		}
+		else {
+			ball2IsCaught = true;
+			modelsPos.erase(modelsPos.begin() + 2);
+		}
+		numOfModels--;
+	}
+	else if (result == 0) {
+		playerModel = newPlayerModel;
+		if (!ball1IsCaught)
+			ball1 = translate(ball1, vec3(0.0f, 0.0f, 1.0f));
+		if (!ball2IsCaught)
+			ball2 = translate(ball2, vec3(0.0f, 0.0f, 1.0f));
+		updatePositions(playerModel, ball1, ball2);
+	}
+}
+
+void moveDown(int result, mat4 newPlayerModel, mat4 newball1, mat4 newball2) {
+	if (result < 0) {
+		std::cout << "You caught: " << result * -1 << std::endl;
+		if (result * -1 == 1) {
+			ball1IsCaught = true;
+			modelsPos.erase(modelsPos.begin() + 1);
+		}
+		else {
+			ball2IsCaught = true;
+			modelsPos.erase(modelsPos.begin() + 2);
+		}
+		numOfModels--;
+	}
+	else if (result == 0) {
+		playerModel = newPlayerModel;
+		if (!ball1IsCaught)
+			ball1 = translate(ball1, vec3(0.0f, 0.0f, -1.0f));
+		if (!ball2IsCaught)
+			ball2 = translate(ball2, vec3(0.0f, 0.0f, -1.0f));
+		updatePositions(playerModel, ball1, ball2);
+	}
+}
+
+// Compares the distance between each object.
+int collisionDetection(mat4 newPlayerPos, mat4 newball1, mat4 newball2) {
+	updatePositions(newPlayerPos, newball1, newball2);
+	double dist;
+
+	for (int i = 1; i < numOfModels; i++) {
+		dist = distanceBetweenPoints(modelsPos[0], modelsPos[i]);
+		std::cout <<"Distance: "<< dist << std::endl;
+		if (dist < 2) return i * -1;;
+	}
+
+	// Now detect if the ball is within the box
+	for (int i = 1; i < numOfModels; i++) {
+		print(modelsPos[i]);
+		// X Bounds
+		if (modelsPos[i].v[0] > 1) return 1;
+		else if (modelsPos[i].v[0] < -10) return 1;
+		// Y Bounds
+		else if (modelsPos[i].v[1] > BOUNDARY) return 1;
+		else if (modelsPos[i].v[1] < BOUNDARY * -1) return 1;
+		// Z Bounds
+		else if (modelsPos[i].v[2] > BOUNDARY) return 1;
+		else if (modelsPos[i].v[2] < BOUNDARY * -1) return 1;
+		else return 0;
+	}
+} 
+
 // handles the movement of the player
 void mySpecialKeyboardFunction(int key, int x, int y) {
+	mat4 newPlayerModel, newball1, newball2;
+	int result;
 	switch (key) {
-		// Right and rotate Y positively
+		// Move right
 		case GLUT_KEY_RIGHT:
-			playerModel = translate(playerModel, vec3(1.0f, 0.0f, 0.0f));
+			newPlayerModel = translate(playerModel, vec3(1.0f, 0.0f, 0.0f));
+			newball1 = translate(ball1, vec3(-1.0f, 0.0f, 0.0f));
+			newball2 = translate(ball2, vec3(-1.0f, 0.0f, 0.0f));
+			result = collisionDetection(newPlayerModel, newball1, newball2);
+			
+			moveRight(result, newPlayerModel, newball1, newball2);
 			break;
-		// Down and rotate X positively
+		// Move back
 		case GLUT_KEY_DOWN:
-			playerModel = translate(playerModel, vec3(0.0f, 0.0f, 1.0f));
+			newPlayerModel = translate(playerModel, vec3(0.0f, 0.0f, 1.0f));
+			newball1 = translate(ball1, vec3(0.0f, 0.0f, -1.0f));
+			newball2 = translate(ball2, vec3(0.0f, 0.0f, -1.0f));
+			result = collisionDetection(newPlayerModel, newball1, newball2);
+
+			moveDown(result, newPlayerModel, newball1, newball2);
 			break;
-		// Left and rotate Y negatively
+		//Move left
 		case GLUT_KEY_LEFT:
-			playerModel = translate(playerModel, vec3(-1.0f, 0.0f, 0.0f));
+			newPlayerModel = translate(playerModel, vec3(-1.0f, 0.0f, 0.0f));
+			newball1 = translate(ball1, vec3(1.0f, 0.0f, 0.0f));
+			newball2 = translate(ball2, vec3(1.0f, 0.0f, 0.0f));
+			result = collisionDetection(newPlayerModel, newball1, newball2);
+			
+			moveLeft(result, newPlayerModel, newball1, newball2);
 			break;
-		// Up and rotate Z negatively
+		// Move Forward
 		case GLUT_KEY_UP:
-			playerModel = translate(playerModel, vec3(0.0f, 0.0f, -1.0f));
+			newPlayerModel = translate(playerModel, vec3(0.0f, 0.0f, -1.0f));
+			newball1 = translate(ball1, vec3(0.0f, 0.0f, 1.0f));
+			newball2 = translate(ball2, vec3(0.0f, 0.0f, 1.0f));
+			result = collisionDetection(newPlayerModel, newball1, newball2);
+			
+			moveUp(result, newPlayerModel, newball1, newball2);
 			break;
 	}
 	glutPostRedisplay(); //request display()
@@ -539,7 +599,9 @@ int main(int argc, char** argv) {
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
 	glutInitWindowSize(width, height);
 	glutCreateWindow("Simon's Lab 5");
-	
+	modelsPos.push_back(vec3(0.0f, 0.0f, 0.0f));
+	modelsPos.push_back(vec3(0.0f, 0.0f, 0.0f));
+	modelsPos.push_back(vec3(0.0f, 0.0f, 0.0f));
 	// Tell glut where the display function is
 	glutDisplayFunc(display);
 	glutIdleFunc(updateScene);

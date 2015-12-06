@@ -103,11 +103,14 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>E:\Dropbox\projects_graphics\assignment_5\Assignment_2\freeglut\include;E:\Dropbox\projects_graphics\assignment_5\Assignment_2\glew-1.10.0\include;E:\Dropbox\projects_graphics\assignment_5\Assignment_2\assimp\include;E:\Dropbox\projects_graphics\assignment_5_D\Assignment_2\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>E:\Dropbox\projects_graphics\assignment_5\Assignment_2\assimp\lib\Release;E:\Dropbox\projects_graphics\Assignment_2\Assignment_2\freeglut\lib;E:\Dropbox\projects_graphics\Assignment_2\Assignment_2\glew-1.10.0\lib\Release\Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>freeglut.lib;glew32.lib;opengl32.lib;assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -130,6 +133,7 @@
     <ClCompile Include="text.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Includes.h" />
     <ClInclude Include="maths_funcs.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="text.h" />

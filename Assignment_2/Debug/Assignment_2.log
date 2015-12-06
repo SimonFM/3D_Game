@@ -1,16 +1,9 @@
-﻿Build started 05/12/2015 13:46:58.
+﻿Build started 06/12/2015 16:27:26.
      1>Project "E:\Dropbox\projects_graphics\assignment_5_D\Assignment_2\Assignment_2.vcxproj" on node 2 (Build target(s)).
-     1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /IE:\Dropbox\projects_graphics\assignment_5\Assignment_2\freeglut\include /I"E:\Dropbox\projects_graphics\assignment_5\Assignment_2\glew-1.10.0\include" /IE:\Dropbox\projects_graphics\assignment_5\Assignment_2\assimp\include /IE:\Dropbox\projects_graphics\assignment_5_D\Assignment_2\glm /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\" /Fd"Debug\vc140.pdb" /Gd /TP /analyze- /errorReport:prompt main.cpp
-         main.cpp
-     1>e:\dropbox\projects_graphics\assignment_5_d\assignment_2\main.cpp(366): warning C4305: 'argument': truncation from 'double' to 'float'
-       Link:
-         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"E:\Dropbox\projects_graphics\assignment_5_D\Debug\Assignment_2.exe" /INCREMENTAL /NOLOGO /LIBPATH:E:\Dropbox\projects_graphics\assignment_5\Assignment_2\assimp\lib\Release /LIBPATH:E:\Dropbox\projects_graphics\Assignment_2\Assignment_2\freeglut\lib /LIBPATH:"E:\Dropbox\projects_graphics\Assignment_2\Assignment_2\glew-1.10.0\lib\Release\Win32" freeglut.lib glew32.lib opengl32.lib glfw3.lib glfw3dll.lib assimp.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /Debug /PDB:"E:\Dropbox\projects_graphics\assignment_5_D\Debug\Assignment_2.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"E:\Dropbox\projects_graphics\assignment_5_D\Debug\Assignment_2.lib" /MACHINE:X86 Debug\main.obj
-         Debug\maths_funcs.obj
-         Debug\text.obj
+     1>Link:
          Assignment_2.vcxproj -> E:\Dropbox\projects_graphics\assignment_5_D\Debug\Assignment_2.exe
      1>Done Building Project "E:\Dropbox\projects_graphics\assignment_5_D\Assignment_2\Assignment_2.vcxproj" (Build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:01.87
+Time Elapsed 00:00:00.18
