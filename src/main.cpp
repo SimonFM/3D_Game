@@ -10,6 +10,7 @@ Camera camera(PLAYERSTARTPOINT);
 // This was from a tutorial found here:
 // https://www.youtube.com/watch?v=elE__Nouv54
 void drawText(const char * textToDraw, int length, int x, int y) {
+	glColor3f(0, 1, 0);
 	glMatrixMode(GL_PROJECTION);
 	double * matrix = new double[16];
 	glGetDoublev(GL_PROJECTION_MATRIX,matrix);
@@ -22,7 +23,7 @@ void drawText(const char * textToDraw, int length, int x, int y) {
 	glRasterPos2i(x,y);
 
 	for (int i = 0; i < length; i++) 
-		glutBitmapCharacter(GLUT_BITMAP_9_BY_15, (int) textToDraw[i]);
+		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, (int) textToDraw[i]);
 
 	glPopMatrix();
 	glMatrixMode(GL_PROJECTION);
@@ -198,6 +199,9 @@ void keypress(unsigned char key, int x, int y) {
 			break;
 		case 'c':
 			camera.Position = OVERHEADVIEW;
+			break;
+		case ' ':
+			gameStart = true;
 			break;
 		case RERDAW:
 			reloadLevel();
@@ -559,87 +563,99 @@ void generateObjectBufferMesh(char * meshPath, int myvao) {
 void display() {
 	mat4 skyModel = identity_mat4();
 	mat4 skyProj = identity_mat4();
+	if (gameStart) {
+		// tell GL to only draw onto a pixel if the shape is closer to the viewer
+		glEnable(GL_DEPTH_TEST); // enable depth-testing
+		glDepthFunc(GL_LESS); // depth-testing interprets a smaller value as "closer"
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glUseProgram(shaderProgramID);
 
-	// tell GL to only draw onto a pixel if the shape is closer to the viewer
-	glEnable(GL_DEPTH_TEST); // enable depth-testing
-	glDepthFunc(GL_LESS); // depth-testing interprets a smaller value as "closer"
-	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glUseProgram(shaderProgramID);
+		//Declare your uniform variables that will be used in your shader
+		int matrix_location = glGetUniformLocation(shaderProgramID, "model");
+		int view_mat_location = glGetUniformLocation(shaderProgramID, "view");
+		int proj_mat_location = glGetUniformLocation(shaderProgramID, "proj");
 
-	//Declare your uniform variables that will be used in your shader
-	int matrix_location = glGetUniformLocation(shaderProgramID, "model");
-	int view_mat_location = glGetUniformLocation(shaderProgramID, "view");
-	int proj_mat_location = glGetUniformLocation(shaderProgramID, "proj");
+		// Root of the Hierarchy
+		mat4 persp_proj = perspective(fov, (float)width / (float)height, 0.1, 100.0);
 
-	// Root of the Hierarchy
-	mat4 persp_proj = perspective(fov, (float) width / (float) height, 0.1, 100.0);
+		view = camera.GetViewMatrix();
 
-	view = camera.GetViewMatrix();
+		/*std::cout << " View" << std::endl;
+		print(getPosition(view));*/
+		// update uniforms & draw
+		glUniformMatrix4fv(proj_mat_location, 1, GL_FALSE, persp_proj.m);
+		glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, view.m);
+
+		// draw Ground
+		for (int i = 0; i < grounds.size(); i++) {
+			//std::cout << "size of ground: " << grounds.size() << std::endl;
+			glUniformMatrix4fv(matrix_location, 1, GL_FALSE, grounds[i].m);
+			// ground
+			glBindVertexArray(GROUND);
+			glBindTexture(GL_TEXTURE_2D, textures[0]);
+			glDrawArrays(GL_TRIANGLES, 0, plane);
+		}
+
+		// draw Enenmies
+		for (int i = 0; i < ballModels.size(); i++) {
+			glBindVertexArray(PLAYER);
+			glBindTexture(GL_TEXTURE_2D, textures[1]);
+			glUniformMatrix4fv(matrix_location, 1, GL_FALSE, ballModels[i].m);
+			glDrawArrays(GL_TRIANGLES, 0, palm);
+		}
+
+
+		// Player
+		glBindVertexArray(PLAYER);
+		glBindTexture(GL_TEXTURE_2D, textures[2]);
+		glUniformMatrix4fv(matrix_location, 1, GL_FALSE, playerModel.m);
+		glDrawArrays(GL_TRIANGLES, 0, palm);
+
+		glBindVertexArray(PLAYER);
+		glBindTexture(GL_TEXTURE_2D, textures[2]);
+
+		mat4 body = identity_mat4();
+		// translation is 15 units in the y direction from the parents coordinate system
+		body = translate(playerModel, vec3(0.0f, 1.0f, 0.0f));
+		// global of the child is got by pre-multiplying the local of the child by the global of the parent
+		//mat4 toDraw = playerModel * rotatingHead;
+		// update uniform & draw
+		glUniformMatrix4fv(matrix_location, 1, GL_FALSE, body.m);
+		glDrawArrays(GL_TRIANGLES, 0, palm);
+
+		mat4 rotatingHead = identity_mat4();
+		// translation is 15 units in the y direction from the parents coordinate system
+		rotatingHead = translate(body, vec3(0.0f, 1.0f, 0.0f));
+		// global of the child is got by pre-multiplying the local of the child by the global of the parent
+		//mat4 toDraw = playerModel * rotatingHead;
+		// update uniform & draw
+		glUniformMatrix4fv(matrix_location, 1, GL_FALSE, rotatingHead.m);
+		glDrawArrays(GL_TRIANGLES, 0, palm);
 		
-	/*std::cout << " View" << std::endl;
-	print(getPosition(view));*/
-	// update uniforms & draw
-	glUniformMatrix4fv(proj_mat_location, 1, GL_FALSE, persp_proj.m);
-	glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, view.m);
+		// Boulders
+		for (int i = 0; i < boulders.size(); i++) {
+			glBindVertexArray(PLAYER);
+			glBindTexture(GL_TEXTURE_2D, textures[5]);
+			glUniformMatrix4fv(matrix_location, 1, GL_FALSE, boulders[i].m);
+			glDrawArrays(GL_TRIANGLES, 0, palm);
+		}
 
-	// draw Ground
-	for (int i = 0; i < grounds.size(); i++) {
-		//std::cout << "size of ground: " << grounds.size() << std::endl;
-		glUniformMatrix4fv(matrix_location, 1, GL_FALSE, grounds[i].m);
-		// ground
-		glBindVertexArray(GROUND);
-		glBindTexture(GL_TEXTURE_2D, textures[0]);
-		glDrawArrays(GL_TRIANGLES, 0, plane);
+
+		if (gameEnd) {
+			std::string won = "Congrats! You win!";
+			drawText(won.data(), won.size(), 325, 400);
+		}
+		else {
+			std::string text = " Enemies Left: " + std::to_string(hasWon);
+			drawText(text.data(), text.size(), 5, 100);
+		}
 	}
-
-	// draw Enenmies
-	for (int i = 0; i < ballModels.size(); i++) {
-		glBindVertexArray(PLAYER);
-		glBindTexture(GL_TEXTURE_2D, textures[1]);
-		glUniformMatrix4fv(matrix_location, 1, GL_FALSE, ballModels[i].m);
-		glDrawArrays(GL_TRIANGLES, 0, palm);
+	else {
+		std::string gameStartText = "Press Space to begin";
+		drawText(gameStartText.data(), gameStartText.size(), 325, 400);
 	}
-
-
-	// Player
-	glBindVertexArray(PLAYER);
-	glBindTexture(GL_TEXTURE_2D, textures[2]);
-	glUniformMatrix4fv(matrix_location, 1, GL_FALSE, playerModel.m);
-	glDrawArrays(GL_TRIANGLES, 0, palm);
-
-	glBindVertexArray(PLAYER);
-	glBindTexture(GL_TEXTURE_2D, textures[2]);
-
-	mat4 body = identity_mat4();
-	// translation is 15 units in the y direction from the parents coordinate system
-	body = translate(playerModel, vec3(0.0f, 1.0f, 0.0f));
-	// global of the child is got by pre-multiplying the local of the child by the global of the parent
-	//mat4 toDraw = playerModel * rotatingHead;
-	// update uniform & draw
-	glUniformMatrix4fv(matrix_location, 1, GL_FALSE, body.m);
-	glDrawArrays(GL_TRIANGLES, 0, palm);
-
-	mat4 rotatingHead = identity_mat4();
-	// translation is 15 units in the y direction from the parents coordinate system
-	rotatingHead = translate(body, vec3(0.0f, 1.0f, 0.0f));
-	// global of the child is got by pre-multiplying the local of the child by the global of the parent
-	//mat4 toDraw = playerModel * rotatingHead;
-	// update uniform & draw
-	glUniformMatrix4fv(matrix_location, 1, GL_FALSE, rotatingHead.m);
-	glDrawArrays(GL_TRIANGLES, 0, palm);
-
-
-
-	// Boulders
-	for (int i = 0; i < boulders.size(); i++) {
-		glBindVertexArray(PLAYER);
-		glBindTexture(GL_TEXTURE_2D, textures[5]);
-		glUniformMatrix4fv(matrix_location, 1, GL_FALSE, boulders[i].m);
-		glDrawArrays(GL_TRIANGLES, 0, palm);
-	}
-
-	drawText("Hello", 0, 5, 100);
+	
 	glutSwapBuffers();
 }
 
@@ -673,11 +689,6 @@ void reloadLevel() {
 	case 4:
 		std::cout << "Reloading Level 5" << std::endl;
 		loadMapFromImage(LEVEL_5);
-		break;
-	default:
-		std::cout << "Congrats! You win!" << std::endl;
-		getch();
-		exit(0);
 		break;
 	}
 	
@@ -714,8 +725,9 @@ void loadNextLevel() {
 			break;
 		default:
 			std::cout << "Congrats! You win!" << std::endl;
-			getch();
-			exit(0);
+			gameEnd = true;
+			
+			
 			break;
 		}
 	
@@ -854,6 +866,13 @@ void init(){
 	std::cout << "Loading Level 1" << std::endl;
 	loadMapFromImage(LEVEL_1);
 	
+
+	// music was found on new grounds:
+	// http://www.newgrounds.com/audio/listen/657490
+	LPCSTR a = "open ../Music/music.mp3 type mpegvideo";
+	mciSendString(a, NULL, 0, 0);
+	LPCSTR b = "play ../Music/music.mp3 repeat";
+	int error2 = mciSendString(b, NULL, 0, 0);
 }
 
 int main(int argc, char** argv) {
@@ -886,7 +905,6 @@ int main(int argc, char** argv) {
 	}
 	// Set up your objects and shaders
 	init();
-
 	// Begin infinite event loop
 	glutMainLoop();
 	return 0;

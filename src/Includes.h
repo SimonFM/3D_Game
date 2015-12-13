@@ -1,3 +1,4 @@
+#pragma comment(lib, "winmm.lib")
 #pragma once
 #include <windows.h>
 #include <mmsystem.h>
@@ -65,6 +66,10 @@ MESH TO LOAD
 #define RED				76
 #define WHITE				255
 
+// MUSIC
+// music was found on new grounds:
+// http://www.newgrounds.com/audio/listen/657490
+#define MUSIC				"..\Music\music.mp3"
 // MISC
 #define COLOR_R			 1
 #define COLOR_G			 2
@@ -102,7 +107,7 @@ vec3  MOVE_RIGHT = vec3(-1.0f, 0.0f, 0.0f);
 vec3  MOVE_UP = vec3(0.0f, 0.0f, 1.0f);
 vec3  MOVE_DOWN = vec3(0.0f, 0.0f, -1.0f);
 
-bool anyKeyPressed = true;
+bool gameStart = false;
 
 int currentLevel = 0;
 
@@ -154,6 +159,7 @@ int numOfModels = NUM_OF_MODELS;
 int hasWon;
 
 bool firstMouse = true;
+bool gameEnd = false;
 GLfloat lastX = 400, lastY = 300;
 
 void moveEverybody(mat4 newPlayerModel, std::vector<mat4> balls);
