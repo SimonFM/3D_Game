@@ -282,6 +282,37 @@ mat3 identity_mat3() {
 		);
 }
 
+//	m[0] = a; m[4] = b; m[8] = c; m[12] = d;
+//	m[1] = e; m[5] = f; m[9] = g; m[13] = h;
+//	m[2] = i; m[6] = j; m[10] = k; m[14] = l;
+//	m[3] = mm; m[7] = n; m[11] = o; m[15] = p;
+//	
+
+
+void erode(mat4 &mat) {
+	mat.m[12] = 0.0f;
+	mat.m[13] = 0.0f;
+	mat.m[14] = 0.0f;
+	mat.m[3] = 0.0f;
+	mat.m[7] = 0.0f; 
+	mat.m[11] = 0.0f;
+	mat.m[15] = 0.0f;
+	
+	//print(mat);
+}
+
+//	m[0] = a; m[3] = b; m[6] = c;
+//	m[1] = d; m[4] = e; m[7] = f;
+//	m[2] = g; m[5] = h; m[8] = i;
+//	
+
+mat4 dilate4(mat3 mat) {
+	return mat4(mat.m[0], mat.m[3], mat.m[6], 0.0f,
+			  mat.m[1], mat.m[4], mat.m[7], 0.0f,
+			  mat.m[2], mat.m[5], mat.m[8], 0.0f,
+			  0.0f,     0.0f,     0.0f ,    0.0f);
+}
+
 mat4 zero_mat4() {
 	return mat4(
 		0.0f, 0.0f, 0.0f, 0.0f,

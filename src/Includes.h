@@ -1,9 +1,14 @@
+
 #pragma comment(lib, "winmm.lib")
+
 #pragma once
 #include <windows.h>
 #include <mmsystem.h>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include "maths_funcs.h"
 #include "text.h"
@@ -23,6 +28,7 @@
 #include <vector> // STL dynamic memory.
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+
 
 /*----------------------------------------------------------------------------
 MESH TO LOAD
@@ -83,7 +89,7 @@ MESH TO LOAD
 #define MODELS				 2
 #define WALLS				 5
 #define PLAYER				 4
-#define SKYBOX				 4
+#define SKYBOX				 6
 #define BOUNDARY			 23
 #define VELOCITY			 0.05
 
@@ -94,10 +100,10 @@ int g_point_count = 0;
 float x_val = -0.35, y_val = 22.12, z_val = 28.80;
 float pos_x = 0.0f, pos_y = 5.0f, pos_z = 0.0f;
 
-vec3 PLAYERSTARTPOINT = vec3(20.0f, 20.0f, 35.0f);
-vec3 OVERHEADVIEW = vec3(0.0f, 0.0f, 0.0f);
+glm::vec3 PLAYERSTARTPOINT = glm::vec3(-15.0f, 20.0f, 3.0f);
+glm::vec3 OVERHEADVIEW = glm::vec3(10.0f, 0.0f, 10.0f);
 vec3 POS = vec3(pos_x, pos_y, pos_z);
-mat4 view = look_at(PLAYERSTARTPOINT, OVERHEADVIEW, vec3(0.0, 1.0, 0.0));
+glm::mat4 view = glm::lookAt(PLAYERSTARTPOINT, OVERHEADVIEW, glm::vec3(0.0, 1.0, 0.0));
 
 vec3  move = vec3(0.005f, 0.0f, 0.0f);
 vec3  move2 = vec3(0.005f, 0.0f, 0.0f);
@@ -110,10 +116,10 @@ vec3  MOVE_DOWN = vec3(0.0f, 0.0f, -1.0f);
 bool gameStart = false;
 
 int currentLevel = 0;
-
+// Skybox things
 GLuint skyID, skyboxTexture;
-GLuint skyboxVAO, skyboxVBO;
-
+GLuint skyboxVAO = 9, skyboxVBO;
+std::vector<std::string> faces;
 
 float fov = 45.0f;
 unsigned int vao = 0, vn_vbo = 0;
@@ -123,11 +129,15 @@ unsigned int vp_vbo = 0, vt_vbo = 0;
 // Handles to our textures
 GLuint textures[10];
 GLuint texturesCube[10];
-GLuint skyBox;
+
+GLuint textureID;
+//std::vector<const GLchar * > faces;
+
+
 // Macro for indexing vertex buffer
 #define BUFFER_OFFSET(i) ((char *) NULL + (i))
 
-GLuint shaderProgramID;
+GLuint shaderProgramID, skyBoxProgramID;
 
 unsigned int mesh_vao = 0;
 int width = 1000, height = 720;
@@ -160,7 +170,52 @@ int hasWon;
 
 bool firstMouse = true;
 bool gameEnd = false;
-GLfloat lastX = 400, lastY = 300;
+GLfloat lastX = 400, lastY = 400;
+
+GLfloat skyboxVertices[] = {
+	// Positions          
+	-45.0f,  45.0f, -45.0f,
+	-45.0f, -45.0f, -45.0f,
+	 45.0f, -45.0f, -45.0f,
+	 45.0f, -45.0f, -45.0f,
+	 45.0f,  45.0f, -45.0f,
+	-45.0f,  45.0f, -45.0f,
+
+	-45.0f, -45.0f,  45.0f,
+	-45.0f, -45.0f, -45.0f,
+	-45.0f,  45.0f, -45.0f,
+	-45.0f,  45.0f, -45.0f,
+	-45.0f,  45.0f,  45.0f,
+	-45.0f, -45.0f,  45.0f,
+
+	 45.0f, -45.0f, -45.0f,
+	 45.0f, -45.0f,  45.0f,
+	 45.0f,  45.0f,  45.0f,
+	 45.0f,  45.0f,  45.0f,
+	 45.0f,  45.0f, -45.0f,
+	 45.0f, -45.0f, -45.0f,
+
+	-45.0f, -45.0f,  45.0f,
+	-45.0f,  45.0f,  45.0f,
+	 45.0f,  45.0f,  45.0f,
+	 45.0f,  45.0f,  45.0f,
+	 45.0f, -45.0f,  45.0f,
+	-45.0f, -45.0f,  45.0f,
+
+	-45.0f,  45.0f, -45.0f,
+	 45.0f,  45.0f, -45.0f,
+	 45.0f,  45.0f,  45.0f,
+	 45.0f,  45.0f,  45.0f,
+	-45.0f,  45.0f,  45.0f,
+	-45.0f,  45.0f, -45.0f,
+
+	-45.0f, -45.0f, -45.0f,
+	-45.0f, -45.0f,  45.0f,
+	 45.0f, -45.0f, -45.0f,
+  	 45.0f, -45.0f, -45.0f,
+	-45.0f, -45.0f,  45.0f,
+	 45.0f, -45.0f,  45.0f
+};
 
 void moveEverybody(mat4 newPlayerModel, std::vector<mat4> balls);
 
@@ -198,3 +253,5 @@ void loadMapFromImage(char * mapPath);
 void loadNextLevel(int currentLevel);
 
 void reloadLevel();
+
+//GLuint loadCubemap(std::vector<const GLchar *> faces);

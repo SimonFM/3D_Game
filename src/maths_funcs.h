@@ -141,4 +141,14 @@ versor slerp(const versor& q, const versor& r);
 versor normalise(versor& q);
 void print(const versor& q);
 versor slerp(versor& q, versor& r, float t);
+
+//printf("[%.2f][%.2f][%.2f][%.2f]\n", m.m[0], m.m[4], m.m[8], m.m[12]);
+//printf("[%.2f][%.2f][%.2f][%.2f]\n", m.m[1], m.m[5], m.m[9], m.m[13]);
+//printf("[%.2f][%.2f][%.2f][%.2f]\n", m.m[2], m.m[6], m.m[10], m.m[14]);
+//printf("[%.2f][%.2f][%.2f][%.2f]\n", m.m[3], m.m[7], m.m[11], m.m[15]);
+void erode(mat4 &mat);
+//printf("[%.2f][%.2f][%.2f]\n", m.m[0], m.m[3], m.m[6]);
+//printf("[%.2f][%.2f][%.2f]\n", m.m[1], m.m[4], m.m[7]);
+//printf("[%.2f][%.2f][%.2f]\n", m.m[2], m.m[5], m.m[8]);
+mat4 dilate4(mat3 mat);
 #endif
