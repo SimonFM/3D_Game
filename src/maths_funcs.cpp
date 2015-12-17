@@ -238,7 +238,7 @@ vec3 cross(const vec3& a, const vec3& b) {
 
 // returns the position of the matrix 
 vec3 getPosition(mat4 mat) {
-	return vec3(mat.m[12],mat.m[13],mat.m[14]);
+	return vec3(mat.m[12], mat.m[13], mat.m[14]);
 }
 
 
@@ -294,10 +294,10 @@ void erode(mat4 &mat) {
 	mat.m[13] = 0.0f;
 	mat.m[14] = 0.0f;
 	mat.m[3] = 0.0f;
-	mat.m[7] = 0.0f; 
+	mat.m[7] = 0.0f;
 	mat.m[11] = 0.0f;
 	mat.m[15] = 0.0f;
-	
+
 	//print(mat);
 }
 
@@ -308,9 +308,9 @@ void erode(mat4 &mat) {
 
 mat4 dilate4(mat3 mat) {
 	return mat4(mat.m[0], mat.m[3], mat.m[6], 0.0f,
-			  mat.m[1], mat.m[4], mat.m[7], 0.0f,
-			  mat.m[2], mat.m[5], mat.m[8], 0.0f,
-			  0.0f,     0.0f,     0.0f ,    0.0f);
+		mat.m[1], mat.m[4], mat.m[7], 0.0f,
+		mat.m[2], mat.m[5], mat.m[8], 0.0f,
+		0.0f, 0.0f, 0.0f, 0.0f);
 }
 
 mat4 zero_mat4() {
@@ -689,7 +689,7 @@ versor slerp(versor& q, versor& r, float t) {
 	}
 	// if qa=qb or qa=-qb then theta = 0 and we can return qa
 	if (fabs(cos_half_theta) >= 1.0f) return q;
-	
+
 	// Calculate temporary values
 	float sin_half_theta = sqrt(1.0f - cos_half_theta * cos_half_theta);
 	// if theta = 180 degrees then result is not fully defined
@@ -711,8 +711,8 @@ versor slerp(versor& q, versor& r, float t) {
 }
 
 /**
- * This is my ortho() function I made it using the slides as a guidline.
- */
+* This is my ortho() function I made it using the slides as a guidline.
+*/
 mat4 ortho(float left, float right, float bottom, float top, float nearVar, float farVar) {
 	mat4 result = identity_mat4();
 	//Diagonals

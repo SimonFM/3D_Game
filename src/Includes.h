@@ -11,7 +11,6 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include "maths_funcs.h"
-#include "text.h"
 #include <conio.h>
 #include "Camera.cpp"
 #include <string>
@@ -36,25 +35,14 @@ MESH TO LOAD
 
 //OBJS
 #define PLANE_MESH_OBJ		"../Textures/Models/plane_2.obj"
-#define PYRAMID_MESH_OBJ		"../Textures/Models/pyramid.obj"
-#define CIRCLE_MESH_OBJ		"../Textures/Models/circle.obj"
-#define PALM_MESH_OBJ		"../Textures/Models/palm.obj"
-#define WALLS_MESH_OBJ		"../Textures/Models/wallls.obj"
 #define BALL_MESH_OBJ		"../Textures/Models/ball.obj"
 
 // TEXTURES
 #define SAND_PATH			 "../Textures/sand.jpg"
-#define PALM_PATH			 "../Textures/palm.jpg"
 #define BRICK_PATH			 "../Textures/pokeball.png"
 #define POKEBALL_PATH		 "../Textures/snow.jpg"
 #define BOULDER_PATH		 "../Textures/boulder.jpg"
 #define BOULDER_PATH		 "../Textures/boulder.jpg"
-#define SKYBOX_PATH_FRONT	 "../Textures/Yokohama2/posx.jpg"
-#define SKYBOX_PATH_BACK		 "../Textures/Yokohama2/posy.jpg"
-#define SKYBOX_PATH_TOP		 "../Textures/Yokohama2/posz.jpg"
-#define SKYBOX_PATH_BOTTOM	 "../Textures/Yokohama2/negx.jpg"
-#define SKYBOX_PATH_LEFT		 "../Textures/Yokohama2/negy.jpg"
-#define SKYBOX_PATH_RIGHT	 "../Textures/Yokohama2/negz.jpg"
 
 //Font
 #define FONT				 "../Font/font.bmp"
@@ -122,6 +110,7 @@ GLuint skyboxVAO = 9, skyboxVBO;
 std::vector<std::string> faces;
 
 float fov = 45.0f;
+float feetRotate = 0.0f;
 unsigned int vao = 0, vn_vbo = 0;
 unsigned int vp_vbo = 0, vt_vbo = 0;
 
@@ -155,15 +144,11 @@ float rotatey = 0.05;
 mat4 playerModel = identity_mat4();
 
 int pyramid = 0, plane = 0;
-int palm = 0, walls = 0;
+int ballVerticesSize = 0, walls = 0;
 
 std::vector<mat4> boulders;
 std::vector<mat4> grounds;
 std::vector<vec3> modelsPos, bouldersPos;
-
-
-bool ball1IsCaught = false;
-bool ball2IsCaught = false;
 
 int numOfModels = NUM_OF_MODELS;
 int hasWon;
@@ -176,9 +161,9 @@ GLfloat skyboxVertices[] = {
 	// Positions          
 	-45.0f,  45.0f, -45.0f,
 	-45.0f, -45.0f, -45.0f,
-	 45.0f, -45.0f, -45.0f,
-	 45.0f, -45.0f, -45.0f,
-	 45.0f,  45.0f, -45.0f,
+	45.0f, -45.0f, -45.0f,
+	45.0f, -45.0f, -45.0f,
+	45.0f,  45.0f, -45.0f,
 	-45.0f,  45.0f, -45.0f,
 
 	-45.0f, -45.0f,  45.0f,
@@ -188,33 +173,33 @@ GLfloat skyboxVertices[] = {
 	-45.0f,  45.0f,  45.0f,
 	-45.0f, -45.0f,  45.0f,
 
-	 45.0f, -45.0f, -45.0f,
-	 45.0f, -45.0f,  45.0f,
-	 45.0f,  45.0f,  45.0f,
-	 45.0f,  45.0f,  45.0f,
-	 45.0f,  45.0f, -45.0f,
-	 45.0f, -45.0f, -45.0f,
+	45.0f, -45.0f, -45.0f,
+	45.0f, -45.0f,  45.0f,
+	45.0f,  45.0f,  45.0f,
+	45.0f,  45.0f,  45.0f,
+	45.0f,  45.0f, -45.0f,
+	45.0f, -45.0f, -45.0f,
 
 	-45.0f, -45.0f,  45.0f,
 	-45.0f,  45.0f,  45.0f,
-	 45.0f,  45.0f,  45.0f,
-	 45.0f,  45.0f,  45.0f,
-	 45.0f, -45.0f,  45.0f,
+	45.0f,  45.0f,  45.0f,
+	45.0f,  45.0f,  45.0f,
+	45.0f, -45.0f,  45.0f,
 	-45.0f, -45.0f,  45.0f,
 
 	-45.0f,  45.0f, -45.0f,
-	 45.0f,  45.0f, -45.0f,
-	 45.0f,  45.0f,  45.0f,
-	 45.0f,  45.0f,  45.0f,
+	45.0f,  45.0f, -45.0f,
+	45.0f,  45.0f,  45.0f,
+	45.0f,  45.0f,  45.0f,
 	-45.0f,  45.0f,  45.0f,
 	-45.0f,  45.0f, -45.0f,
 
 	-45.0f, -45.0f, -45.0f,
 	-45.0f, -45.0f,  45.0f,
-	 45.0f, -45.0f, -45.0f,
-  	 45.0f, -45.0f, -45.0f,
+	45.0f, -45.0f, -45.0f,
+	45.0f, -45.0f, -45.0f,
 	-45.0f, -45.0f,  45.0f,
-	 45.0f, -45.0f,  45.0f
+	45.0f, -45.0f,  45.0f
 };
 
 void moveEverybody(mat4 newPlayerModel, std::vector<mat4> balls);
@@ -254,4 +239,4 @@ void loadNextLevel(int currentLevel);
 
 void reloadLevel();
 
-//GLuint loadCubemap(std::vector<const GLchar *> faces);
+GLuint loadCubemap(std::vector<std::string> faces);
