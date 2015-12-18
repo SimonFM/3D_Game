@@ -34,31 +34,31 @@ MESH TO LOAD
 ----------------------------------------------------------------------------*/
 
 //OBJS
-#define PLANE_MESH_OBJ		"../textures/Models/plane_2.obj"
-#define BALL_MESH_OBJ		  "../textures/Models/ball.obj"
+#define PLANE_MESH_OBJ		"../Textures/Models/plane_2.obj"
+#define BALL_MESH_OBJ		"../Textures/Models/ball.obj"
 
 // TEXTURES
-#define SAND_PATH			   "../textures/images/sand.jpg"
-#define BRICK_PATH			 "../textures/images/pokeball.png"
-#define POKEBALL_PATH		 "../textures/images/snow.jpg"
-#define BOULDER_PATH		 "../textures/images/boulder.jpg"
-
+#define SAND_PATH			 "../Textures/sand.jpg"
+#define BRICK_PATH			 "../Textures/pokeball.png"
+#define POKEBALL_PATH		 "../Textures/snow.jpg"
+#define BOULDER_PATH		 "../Textures/boulder.jpg"
+#define BOULDER_PATH		 "../Textures/boulder.jpg"
 
 //Font
 #define FONT				 "../Font/font.bmp"
 
 //Levels
-#define LEVEL_1			"../levels/Level_2.png"
-#define LEVEL_2			"../levels/Level_1.png"
-#define LEVEL_3			"../levels/Level_3.png"
-#define LEVEL_4			"../levels/Level_4.png"
-#define LEVEL_5			"../levels/Level_5.png"
-#define TOMS_LEVEL	"../levels/TomsLevel.png"
+#define LEVEL_1			"../Levels/Level_2.png"
+#define LEVEL_2			"../Levels/Level_1.png"
+#define LEVEL_3			"../Levels/Level_3.png"
+#define LEVEL_4			"../Levels/Level_4.png"
+#define LEVEL_5			"../Levels/Level_5.png"
+#define TOMS_LEVEL			"../Levels/TomsLevel.png"
 
 // Greyscale colour values through green channel.
 #define BLUE				28
 #define BLACK				0
-#define RED				  76
+#define RED				76
 #define WHITE				255
 
 // MUSIC
@@ -72,15 +72,15 @@ MESH TO LOAD
 
 // Button interaction
 #define ESC_BUTTON			 27
-#define RERDAW				   'r'
+#define RERDAW				 'r'
 #define NUM_OF_MODELS		 3
-#define VAO_SIZE			   10
-#define GROUND				   1
-#define MODELS				   2
-#define WALLS				     5
-#define PLAYER				   4
-#define SKYBOX				   6
-#define VELOCITY			   0.5
+#define VAO_SIZE			 10
+#define GROUND				 1
+#define MODELS				 2
+#define WALLS				 5
+#define PLAYER				 4
+#define SKYBOX				 6
+#define VELOCITY			 0.5
 
 /*----------------------------------------------------------------------------
 ----------------------------------------------------------------------------*/
