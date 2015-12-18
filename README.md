@@ -1,6 +1,5 @@
 # 3D_Game
-A simple game written in opengl for a college assignment. The levels are created by reading in a .png file, where the white pixels indicate
-where to draw a tile, the red pixels are an enemy, the blue pixels are the plyer and the black pixels represent the obstacles.
+A simple game written in opengl for a college assignment. The levels are created by reading in a .png file, where the white pixels indicate where to draw a tile, the red pixels are an enemy, the blue pixels are the player and the black pixels represent the obstacles.
 
 To move the player use the w a s d, to switch to the camera press caps lock. The mouse allows you to change where the camera is looking
 at too.
