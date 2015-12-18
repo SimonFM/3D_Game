@@ -1,10 +1,6 @@
-
-//Some Windows Headers (For Time, IO, etc.)
 #include "Includes.h"
-
 #pragma warning(disable:4996)
 
-Camera camera(PLAYERSTARTPOINT);
 // This was from a tutorial found here:
 // https://www.youtube.com/watch?v=elE__Nouv54
 void drawText(const char * textToDraw, int length, int x, int y) {
@@ -65,6 +61,10 @@ int collisionDetection(mat4 newPlayerPos, std::vector<mat4>  newBalls) {
 
 
 // Placeholder code for the keypress
+// To move a player and the balls, I simply calculated the next position
+// of each of the models and then checked if any of them hit with each other
+// both in their current position and in their next position.
+// The result of this collision detection determined the result of the movement.
 void keypress(unsigned char key, int x, int y) {
 	mat4 newPlayerModel, newball1, newball2;
 	std::vector<mat4>  balls;
@@ -118,7 +118,6 @@ void keypress(unsigned char key, int x, int y) {
 	case 'a':
 		if (gameStart) {
 			newPlayerModel = translate(playerModel, vec3(-1.0f, 0.0f, 0.0f));
-
 			for (int i = 0; i < ballModels.size(); i++)
 				balls.push_back(translate(ballModels[i], vec3(1.0f, 0.0f, 0.0f)));
 
@@ -162,19 +161,19 @@ void keypress(unsigned char key, int x, int y) {
 		}
 		break;
 	case 'D':
-		if (gameStart)	camera.ProcessKeyboard(RIGHT, 0.5);
+		if (gameStart)	camera.ProcessKeyboard(RIGHT, VELOCITY);
 		break;
 		// Move back
 	case 'S':
-		if (gameStart)	camera.ProcessKeyboard(BACKWARD, 0.5);
+		if (gameStart)	camera.ProcessKeyboard(BACKWARD, VELOCITY);
 		break;
 		//Move left
 	case 'A':
-		if (gameStart) camera.ProcessKeyboard(LEFT, 0.5);
+		if (gameStart) camera.ProcessKeyboard(LEFT, VELOCITY);
 		break;
 		// Move Forward
 	case 'W':
-		if (gameStart) camera.ProcessKeyboard(FORWARD, 0.5);
+		if (gameStart) camera.ProcessKeyboard(FORWARD, VELOCITY);
 		break;
 	case 'c':
 		if (gameStart)	camera.Position = PLAYERSTARTPOINT;
@@ -201,12 +200,10 @@ void mouseWheel(int button, int direction, int x, int y) {
 }
 
 // Handles moving the mouse, where x and y are the co ordinates of the mouse
+// My improved camera movement was found through a tutorial on learnopengl.com
+// http://learnopengl.com/#!Getting-started/Camera
 void mouseMove(int x, int y) {
-	if (firstMouse) {
-		lastX = x;
-		lastY = y;
-		firstMouse = false;
-	}
+	
 	GLfloat xoffset = x - lastX;
 	GLfloat yoffset = lastY - y;  // Reversed since y-coordinates go from bottom to left
 
@@ -220,7 +217,7 @@ void mouseMove(int x, int y) {
 }
 
 
-
+// Moves everyone to their new locations.
 void moveEverybody(mat4 newPlayerModel, std::vector<mat4> balls) {
 	for (int i = 0; i < balls.size(); i++) {
 		ballModels[i] = balls[i];
@@ -232,6 +229,8 @@ void moveEverybody(mat4 newPlayerModel, std::vector<mat4> balls) {
 
 #pragma region MAPS
 
+// A function that when given some image data, calculates the positions and the number
+// of models in a scene.
 void getPixels(unsigned char * img, int imgWidth, int imgHeight, int n) {
 	std::vector<unsigned char> pixels;
 	int enemies = 0, world = 0, bouldersCount = 0, player = 0;
@@ -274,18 +273,13 @@ void getPixels(unsigned char * img, int imgWidth, int imgHeight, int n) {
 	hasWon = enemies;
 }
 
-void printMapValues(unsigned char * img, int imgWidth, int imgHeight, int n) {
-	int count = 0;
-	int black = 0, white = 0, red = 0, yellow = 0;
-	getPixels(img, imgWidth, imgHeight, n);
 
-}
-
+// Loads a scene from an image.
 void loadMapFromImage(char * mapPath) {
 	int imgWidth, imgHeight, n;
 	unsigned char * img = stbi_load(mapPath, &imgWidth, &imgHeight, &n, 1);
 	if (img == nullptr) std::cout << "unable to find: " << mapPath << std::endl;
-	printMapValues(img, imgWidth, imgHeight, n);
+	getPixels(img, imgWidth, imgHeight, n);
 
 }
 #pragma endregion MAPS
@@ -310,6 +304,46 @@ GLuint textureLoading(char * texturePath) {
 	stbi_image_free(img);
 	std::cout << "Loaded: " << texturePath << std::endl;
 	return texture;
+}
+
+
+/**
+* Loads a cubemap texture from 6 individual texture faces
+* Order should be:
+* +X (right)
+* -X (left)
+* +Y (top)
+* -Y (bottom)
+* +Z (front)
+* -Z (back)
+* This was implemented using help found on learnopengl.com
+**/
+GLuint loadCubemap(std::vector<std::string> faces) {
+	GLuint textureID;
+	glGenTextures(1, &textureID);
+
+	int widthimg, heightImg, n;
+	unsigned char* image;
+
+	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+	for (GLuint i = 0; i < faces.size(); i++) {
+		image = stbi_load(faces[i].c_str(), &widthimg, &heightImg, &n, STBI_rgb);
+		if (!image) std::cout << "cant find the skybox texture: " << faces[i] << std::endl;
+		std::cout << "Width: " << widthimg << std::endl;
+		std::cout << "Height: " << heightImg << std::endl;
+		std::cout << "Loaded: " << faces[i] << std::endl;
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, widthimg, heightImg, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+		stbi_image_free(image);
+	}
+
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+	return textureID;
 }
 #pragma endregion TEXTURE LOADING
 
@@ -371,48 +405,11 @@ bool load_mesh(const char* file_name) {
 #pragma endregion MESH LOADING
 
 #pragma region SKYBOXREGION
-/**
-* Loads a cubemap texture from 6 individual texture faces
-* Order should be:
-* +X (right)
-* -X (left)
-* +Y (top)
-* -Y (bottom)
-* +Z (front)
-* -Z (back)
-* This was implemented using help found on learnopengl.com
-**/
-GLuint loadCubemap(std::vector<std::string> faces) {
-	GLuint textureID;
-	glGenTextures(1, &textureID);
-
-	int widthimg, heightImg, n;
-	unsigned char* image;
-
-	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
-	for (GLuint i = 0; i < faces.size(); i++) {
-		image = stbi_load(faces[i].c_str(), &widthimg, &heightImg, &n, STBI_rgb);
-		if (!image) std::cout << "cant find the skybox texture: " << faces[i] << std::endl;
-		std::cout << "Width: " << widthimg << std::endl;
-		std::cout << "Height: " << heightImg << std::endl;
-		std::cout << "Loaded: " << faces[i] << std::endl;
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, widthimg, heightImg, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-		stbi_image_free(image);
-	}
-
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-
-	return textureID;
-}
-
 
 // The textures for the skybox were found online
 // http://www.custommapmakers.org/skyboxes.php
+// I found out how to do skyboxes by following a tutorial onlearnopengl.com
+// http://learnopengl.com/#!Advanced-OpenGL/Cubemaps
 void loadSkyBox() {
 	glGenBuffers(1, &skyboxVBO);
 	glBindVertexArray(skyboxVAO);
@@ -430,6 +427,11 @@ void loadSkyBox() {
 	faces.push_back("../skybox/left.tga"); //front
 	skyboxTexture = loadCubemap(faces);
 }
+
+// The textures for the skybox were found online
+// http://www.custommapmakers.org/skyboxes.php
+// I found out how to do skyboxes by following a tutorial onlearnopengl.com
+// http://learnopengl.com/#!Advanced-OpenGL/Cubemaps
 void drawSkybox(mat4 persp_proj) {
 	glDepthFunc(GL_LEQUAL);  // Change depth function so depth test passes when values are equal to depth buffer's content
 	glUseProgram(skyBoxProgramID);
@@ -471,8 +473,7 @@ char* readShaderSource(const char* shaderFile) {
 }
 
 
-static void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType)
-{
+static void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType){
 	// create a shader object
 	GLuint ShaderObj = glCreateShader(ShaderType);
 
@@ -501,8 +502,7 @@ static void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum Shad
 	glAttachShader(ShaderProgram, ShaderObj);
 }
 
-GLuint CompileShaders(bool isSkyBox)
-{
+GLuint CompileShaders(bool isSkyBox){
 	//Start the process of setting up our shaders by creating a program ID
 	//Note: we will link all the shaders together into this ID
 	GLuint shader = glCreateProgram();
@@ -561,7 +561,6 @@ GLuint CompileShaders(bool isSkyBox)
 #pragma region VBO_FUNCTIONS
 
 void generateObjectBufferMesh(char * meshPath, int myvao) {
-
 	/*----------------------------------------------------------------------------
 	LOAD MESH HERE AND COPY INTO BUFFERS
 	----------------------------------------------------------------------------*/
@@ -647,6 +646,7 @@ void display() {
 		glDrawArrays(GL_TRIANGLES, 0, ballVerticesSize);
 	}
 
+	// Hierarchal Model
 	// Player root
 	glBindVertexArray(PLAYER);
 	glBindTexture(GL_TEXTURE_2D, textures[2]);
@@ -656,6 +656,7 @@ void display() {
 	glBindVertexArray(PLAYER);
 	glBindTexture(GL_TEXTURE_2D, textures[2]);
 
+	// Body of player
 	mat4 body = identity_mat4();
 	body = translate(playerModel, vec3(0.0f, 1.0f, 0.0f));
 	
@@ -666,7 +667,6 @@ void display() {
 	mat4 rotatingArm1 = identity_mat4();
 	rotatingArm1 = translate(rotatingArm1, vec3(1.0f, 0.0f, 0.0f));
 	rotatingArm1 = rotate_x_deg(rotatingArm1, rotatey);
-	//rotatingHead = translate(body, vec3(0.0f, 1.0f, 0.0f));
 	mat4 globalArm1 = body * rotatingArm1;
 	// update uniform & draw
 	glUniformMatrix4fv(matrix_location, 1, GL_FALSE, globalArm1.m);
@@ -675,7 +675,6 @@ void display() {
 	mat4 rotatingArm2 = identity_mat4();
 	rotatingArm2 = translate(rotatingArm2, vec3(-1.0f, 0.0f, 0.0f));
 	rotatingArm2 = rotate_x_deg(rotatingArm2, rotatey);
-	//rotatingHead = translate(body, vec3(0.0f, 1.0f, 0.0f));
 	mat4 globalArm2 = body * rotatingArm2;
 	// update uniform & draw
 	glUniformMatrix4fv(matrix_location, 1, GL_FALSE, globalArm2.m);
@@ -689,17 +688,17 @@ void display() {
 		glDrawArrays(GL_TRIANGLES, 0, ballVerticesSize);
 	}
 
-
+	// when the player wins, draw some text
 	if (gameEnd) {
 		std::string won = "Congrats! You win!";
 		drawText(won.data(), won.size(), 325, 400);
 	}
-	else {
+	else { // otherwise just display how many enemies are left
 		std::string text = " Enemies Left: " + std::to_string(hasWon);
 		drawText(text.data(), text.size(), 5, 100);
 	}
 
-	if (!gameStart) {
+	if (!gameStart) { // while the player hasnt started the game
 		std::string gameStartText = "Press Space to begin";
 		drawText(gameStartText.data(), gameStartText.size(), 325, 400);
 	}
@@ -710,6 +709,8 @@ void display() {
 
 }
 
+#pragma region LEVELS
+// A method that redraws the models should the player get stuck.
 void reloadLevel() {
 	//clear all the models
 	boulders.clear();
@@ -745,6 +746,7 @@ void reloadLevel() {
 
 }
 
+// Loads the next level when the player has killed all the enemies
 void loadNextLevel() {
 	//clear all the models
 	boulders.clear();
@@ -782,11 +784,11 @@ void loadNextLevel() {
 	}
 
 }
+#pragma endregion LEVELS
 
 void updateScene() {
 	rotatey += 0.5;
 	if (hasWon == 0) loadNextLevel();
-	feetRotate += 2;
 	// Draw the next frame
 	glutPostRedisplay();
 }
@@ -822,7 +824,6 @@ void init() {
 	int error2 = mciSendString(b, NULL, 0, 0);
 	loadSkyBox();
 }
-
 
 int main(int argc, char ** argv) {
 	// Set up the window

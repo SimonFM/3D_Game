@@ -9,7 +9,9 @@
 // I followed a tutorial here: http://learnopengl.com/#!Getting-started/Camera
 // http://learnopengl.com/code_viewer.php?code=getting-started/camera_with_class
 // http://learnopengl.com/code_viewer.php?type=header&code=camera
-// in order to get a better camera from the last lab.
+// in order to get a better camera from the last lab. I initially got this working
+// with Anton's matrices, but when I added the skybox I had to reset it to the 
+// glm library implementations
 //
 // Defines several possible options for camera movement. Used as abstraction to stay away from window-system specific input methods
 enum Camera_Movement {

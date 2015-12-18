@@ -1,7 +1,5 @@
-
-#pragma comment(lib, "winmm.lib")
-
 #pragma once
+#pragma comment(lib, "winmm.lib")
 #include <windows.h>
 #include <mmsystem.h>
 #include <GL/glew.h>
@@ -12,7 +10,7 @@
 #include <iostream>
 #include "maths_funcs.h"
 #include <conio.h>
-#include "Camera.cpp"
+#include "Camera.hpp"
 #include <string>
 #include <stdlib.h>
 #include <math.h>
@@ -25,6 +23,8 @@
 #include <math.h>
 #include <string>
 #include <vector> // STL dynamic memory.
+// I found the stbi image header from the link Anton Referenced in the
+// discussion board.
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
@@ -34,30 +34,31 @@ MESH TO LOAD
 ----------------------------------------------------------------------------*/
 
 //OBJS
-#define PLANE_MESH_OBJ		"../Textures/Models/plane_2.obj"
-#define BALL_MESH_OBJ		"../Textures/Models/ball.obj"
+#define PLANE_MESH_OBJ		"../textures/Models/plane_2.obj"
+#define BALL_MESH_OBJ		  "../textures/Models/ball.obj"
 
 // TEXTURES
-#define SAND_PATH			 "../Textures/sand.jpg"
-#define BRICK_PATH			 "../Textures/pokeball.png"
-#define POKEBALL_PATH		 "../Textures/snow.jpg"
-#define BOULDER_PATH		 "../Textures/boulder.jpg"
-#define BOULDER_PATH		 "../Textures/boulder.jpg"
+#define SAND_PATH			   "../textures/images/sand.jpg"
+#define BRICK_PATH			 "../textures/images/pokeball.png"
+#define POKEBALL_PATH		 "../textures/images/snow.jpg"
+#define BOULDER_PATH		 "../textures/images/boulder.jpg"
+
 
 //Font
 #define FONT				 "../Font/font.bmp"
 
 //Levels
-#define LEVEL_1			"../Levels/Level_2.png"
-#define LEVEL_2			"../Levels/Level_1.png"
-#define LEVEL_3			"../Levels/Level_3.png"
-#define LEVEL_4			"../Levels/Level_4.png"
-#define LEVEL_5			"../Levels/Level_5.png"
-#define TOMS_LEVEL			"../Levels/TomsLevel.png"
+#define LEVEL_1			"../levels/Level_2.png"
+#define LEVEL_2			"../levels/Level_1.png"
+#define LEVEL_3			"../levels/Level_3.png"
+#define LEVEL_4			"../levels/Level_4.png"
+#define LEVEL_5			"../levels/Level_5.png"
+#define TOMS_LEVEL	"../levels/TomsLevel.png"
 
+// Greyscale colour values through green channel.
 #define BLUE				28
 #define BLACK				0
-#define RED				76
+#define RED				  76
 #define WHITE				255
 
 // MUSIC
@@ -69,17 +70,17 @@ MESH TO LOAD
 #define COLOR_G			 2
 #define COLOR_B			 3
 
+// Button interaction
 #define ESC_BUTTON			 27
-#define RERDAW				 'r'
+#define RERDAW				   'r'
 #define NUM_OF_MODELS		 3
-#define VAO_SIZE			 10
-#define GROUND				 1
-#define MODELS				 2
-#define WALLS				 5
-#define PLAYER				 4
-#define SKYBOX				 6
-#define BOUNDARY			 23
-#define VELOCITY			 0.05
+#define VAO_SIZE			   10
+#define GROUND				   1
+#define MODELS				   2
+#define WALLS				     5
+#define PLAYER				   4
+#define SKYBOX				   6
+#define VELOCITY			   0.5
 
 /*----------------------------------------------------------------------------
 ----------------------------------------------------------------------------*/
@@ -101,7 +102,6 @@ vec3  MOVE_RIGHT = vec3(-1.0f, 0.0f, 0.0f);
 vec3  MOVE_UP = vec3(0.0f, 0.0f, 1.0f);
 vec3  MOVE_DOWN = vec3(0.0f, 0.0f, -1.0f);
 
-bool gameStart = false;
 
 int currentLevel = 0;
 // Skybox things
@@ -110,7 +110,6 @@ GLuint skyboxVAO = 9, skyboxVBO;
 std::vector<std::string> faces;
 
 float fov = 45.0f;
-float feetRotate = 0.0f;
 unsigned int vao = 0, vn_vbo = 0;
 unsigned int vp_vbo = 0, vt_vbo = 0;
 
@@ -118,10 +117,7 @@ unsigned int vp_vbo = 0, vt_vbo = 0;
 // Handles to our textures
 GLuint textures[10];
 GLuint texturesCube[10];
-
 GLuint textureID;
-//std::vector<const GLchar * > faces;
-
 
 // Macro for indexing vertex buffer
 #define BUFFER_OFFSET(i) ((char *) NULL + (i))
@@ -152,10 +148,11 @@ std::vector<vec3> modelsPos, bouldersPos;
 
 int numOfModels = NUM_OF_MODELS;
 int hasWon;
-
-bool firstMouse = true;
 bool gameEnd = false;
-GLfloat lastX = 400, lastY = 400;
+bool gameStart = false;
+
+Camera camera(PLAYERSTARTPOINT); // sets the camera's position
+GLfloat lastX = 400, lastY = 400; // bounds for mouse movement
 
 GLfloat skyboxVertices[] = {
 	// Positions          
